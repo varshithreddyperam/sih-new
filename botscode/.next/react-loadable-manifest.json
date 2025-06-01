@@ -1,0 +1,14 @@
+{
+  "..\\app\\coding\\page.js -> @monaco-editor/react": {
+    "id": "..\\app\\coding\\page.js -> @monaco-editor/react",
+    "files": [
+      "static/chunks/_app-client_node_modules_monaco-editor_react_dist_index_mjs.js"
+    ]
+  },
+  "..\\firebase.js -> firebase/analytics": {
+    "id": "..\\firebase.js -> firebase/analytics",
+    "files": [
+      "static/chunks/_app-client_node_modules_firebase_analytics_dist_esm_index_esm_js.js"
+    ]
+  }
+}
