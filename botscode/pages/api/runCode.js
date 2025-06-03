@@ -14,13 +14,43 @@ const languageMap = {
 };
 
 const RAPIDAPI_HOST = 'judge0-ce.p.rapidapi.com';
-const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY; // Set your RapidAPI key in environment variables
+const RAPIDAPI_KEY = '91d8d6e654mshacc1c9b8e36c96fp1f5dbcjsn22273515f012';
+
+async function checkRapidApiKey() {
+  return true; // No API key needed for public Judge0 API
+}
 
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 export default async function handler(req, res) {
+  if (req.method === 'GET') {
+    // Handle GET request to fetch supported languages
+    try {
+      const response = await fetch(`${JUDGE0_API_BASE_URL}/languages`, {
+        method: 'GET',
+        headers: {
+          'x-rapidapi-host': RAPIDAPI_HOST,
+          'x-rapidapi-key': RAPIDAPI_KEY,
+          'Content-Type': 'application/json'
+        }
+      });
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Judge0 API getLanguages error:', errorText);
+        res.status(500).json({ error: 'Failed to fetch languages' });
+        return;
+      }
+      const languages = await response.json();
+      res.status(200).json(languages);
+    } catch (error) {
+      console.error('Error fetching languages:', error);
+      res.status(500).json({ error: error.message });
+    }
+    return;
+  }
+
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' });
     return;
@@ -39,20 +69,15 @@ export default async function handler(req, res) {
     return;
   }
 
-  if (!RAPIDAPI_KEY) {
-    res.status(500).json({ error: 'RapidAPI key is not configured' });
-    return;
-  }
-
   try {
     console.log('Submitting code to Judge0 API:', { code, languageId });
-    // Submit code with wait=false to get token
-    const submitResponse = await fetch(`${JUDGE0_API_BASE_URL}/submissions?base64_encoded=false&wait=false`, {
+    // Submit code with wait=true for synchronous execution
+    const submitResponse = await fetch(`${JUDGE0_API_BASE_URL}/submissions?base64_encoded=false&wait=true`, {
       method: 'POST',
       headers: {
-        'Content-Type': 'application/json',
         'x-rapidapi-host': RAPIDAPI_HOST,
         'x-rapidapi-key': RAPIDAPI_KEY,
+        'Content-Type': 'application/json'
       },
       body: JSON.stringify({
         source_code: code,
@@ -63,48 +88,13 @@ export default async function handler(req, res) {
 
     if (!submitResponse.ok) {
       const errorText = await submitResponse.text();
-      console.error('Judge0 API submission error:', errorText);
-      res.status(500).json({ output: `Judge0 API submission error: ${errorText}` });
+      console.error(`Judge0 API submission error: Status ${submitResponse.status} - ${errorText}`);
+      res.status(500).json({ output: `Judge0 API submission error: Status ${submitResponse.status} - ${errorText}` });
       return;
     }
 
-    const submitResult = await submitResponse.json();
-    console.log('Judge0 API submission response:', submitResult);
-    const token = submitResult.token;
-
-    if (!token) {
-      res.status(500).json({ output: 'Judge0 API did not return a token' });
-      return;
-    }
-
-    // Poll for result
-    let result = null;
-    for (let i = 0; i < 20; i++) { // max 20 attempts, 1 second apart
-      const resultResponse = await fetch(`${JUDGE0_API_BASE_URL}/submissions/${token}?base64_encoded=false`, {
-        headers: {
-          'x-rapidapi-host': RAPIDAPI_HOST,
-          'x-rapidapi-key': RAPIDAPI_KEY,
-        },
-      });
-      if (!resultResponse.ok) {
-        const errorText = await resultResponse.text();
-        console.error('Judge0 API result error:', errorText);
-        res.status(500).json({ output: `Judge0 API result error: ${errorText}` });
-        return;
-      }
-      result = await resultResponse.json();
-      console.log('Judge0 API polling result:', result);
-
-      if (result.status && result.status.id >= 3) { // 3: Completed, 4: Accepted
-        break;
-      }
-      await sleep(1000);
-    }
-
-    if (!result) {
-      res.status(500).json({ output: 'Judge0 API polling timed out' });
-      return;
-    }
+    const result = await submitResponse.json();
+    console.log('Judge0 API execution result:', JSON.stringify(result, null, 2));
 
     let output = '';
     if (result.stdout) {
@@ -115,8 +105,14 @@ export default async function handler(req, res) {
       output = result.stderr;
     } else if (result.message) {
       output = result.message;
+    } else {
+      output = 'No output received from Judge0 API';
     }
 
+    // Ensure output is a string before sending response
+    if (typeof output !== 'string') {
+      output = JSON.stringify(output);
+    }
     res.status(200).json({ output });
   } catch (error) {
     console.error('Error in runCode API:', error);

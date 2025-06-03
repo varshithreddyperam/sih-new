@@ -14,6 +14,7 @@ import {
   RecaptchaVerifier,
   signInWithPhoneNumber
 } from 'firebase/auth'
+import Head from 'next/head'
 
 export default function Home() {
   const router = useRouter()
@@ -163,127 +164,132 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 text-white p-6 flex flex-col items-center font-sans">
-      <div className="w-full max-w-md bg-opacity-10 bg-gray-800 backdrop-blur-md rounded-2xl shadow-2xl p-8 mb-10 border border-gray-700">
-        {!user ? (
-          <>
-            <h2 className="text-4xl font-extrabold mb-8 text-center text-white tracking-wide drop-shadow-lg">
-              🚀 Welcome to <span className="text-blue-500">BotsCode</span>
-            </h2>
+    <>
+      <Head>
+        <link rel="icon" href="/botscode-icon.png" />
+      </Head>
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 text-white p-6 flex flex-col items-center font-sans">
+        <div className="w-full max-w-md bg-opacity-10 bg-gray-800 backdrop-blur-md rounded-2xl shadow-2xl p-8 mb-10 border border-gray-700">
+          {!user ? (
+            <>
+              <h2 className="text-4xl font-extrabold mb-8 text-center text-white tracking-wide drop-shadow-lg">
+                Welcome to <span className="text-blue-500">BotsCode</span>
+              </h2>
 
-            <button
-              onClick={signInWithGoogle}
-              className="w-full mb-6 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-500 hover:to-blue-700 transition-all duration-300 text-white font-semibold rounded-lg shadow-lg"
-            >
-              Sign in with Google
-            </button>
-
-            <div className="flex items-center justify-between mb-6">
-              <label htmlFor="registerToggle" className="flex items-center text-gray-300 text-sm cursor-pointer">
-                <input
-                  id="registerToggle"
-                  type="checkbox"
-                  checked={isNewUser}
-                  onChange={() => setIsNewUser(!isNewUser)}
-                  className="mr-2 accent-blue-500"
-                />
-                Register new user
-              </label>
               <button
-                onClick={resetPassword}
-                className="text-sm text-red-400 hover:text-red-300 transition"
+                onClick={signInWithGoogle}
+                className="w-full mb-6 px-4 py-3 bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-500 hover:to-blue-700 transition-all duration-300 text-white font-semibold rounded-lg shadow-lg"
               >
-                Forgot Password?
+                Sign in with Google
               </button>
-            </div>
 
-            <div className="mb-6 space-y-4">
-              <input
-                type="email"
-                placeholder="Email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-gray-800 text-white placeholder-gray-400 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-              />
-              <input
-                type="password"
-                placeholder="Password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-gray-800 text-white placeholder-gray-400 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
-              />
-              <button
-                onClick={handleEmailSignIn}
-                className="w-full bg-gradient-to-r from-green-600 to-green-800 hover:from-green-500 hover:to-green-700 transition-all duration-300 text-white py-3 rounded-lg shadow-md font-semibold"
-              >
-                {isNewUser ? 'Register' : 'Sign In'}
-              </button>
-            </div>
-
-            <div className="mb-6 space-y-4">
-              <input
-                type="tel"
-                placeholder="Phone number (+1234567890)"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full bg-gray-800 text-white placeholder-gray-400 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition"
-              />
-              <button
-                onClick={sendOtp}
-                className="w-full bg-gradient-to-r from-yellow-600 to-yellow-800 hover:from-yellow-500 hover:to-yellow-700 transition-all duration-300 text-white py-3 rounded-lg shadow-md font-semibold"
-              >
-                Send OTP
-              </button>
-            </div>
-
-            {confirmationResult && (
-              <div className="mb-6 space-y-4">
-                <input
-                  type="text"
-                  placeholder="Enter OTP"
-                  value={otp}
-                  onChange={(e) => setOtp(e.target.value)}
-                  className="w-full bg-gray-800 text-white placeholder-gray-400 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
-                />
+              <div className="flex items-center justify-between mb-6">
+                <label htmlFor="registerToggle" className="flex items-center text-gray-300 text-sm cursor-pointer">
+                  <input
+                    id="registerToggle"
+                    type="checkbox"
+                    checked={isNewUser}
+                    onChange={() => setIsNewUser(!isNewUser)}
+                    className="mr-2 accent-blue-500"
+                  />
+                  Register new user
+                </label>
                 <button
-                  onClick={verifyOtp}
-                  className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-500 hover:to-purple-700 transition-all duration-300 text-white py-3 rounded-lg shadow-md font-semibold"
+                  onClick={resetPassword}
+                  className="text-sm text-red-400 hover:text-red-300 transition"
                 >
-                  Verify OTP
+                  Forgot Password?
                 </button>
               </div>
-            )}
-          </>
-        ) : (
-          <>
-            <p className="mb-6 text-center text-gray-300 text-lg">
-              Signed in as <span className="text-blue-400">{user.email || user.phoneNumber}</span>
-            </p>
-            <div className="flex flex-col gap-4">
-              <button
-                onClick={() => router.push('/coding')}
-                className="px-4 py-2 bg-gradient-to-r from-green-600 to-green-800 hover:from-green-500 hover:to-green-700 text-white rounded-lg shadow-md font-semibold"
-              >
-                Go to Coding Page
-              </button>
-              <button
-                onClick={changePassword}
-                className="px-4 py-2 bg-gradient-to-r from-orange-600 to-orange-800 hover:from-orange-500 hover:to-orange-700 text-white rounded-lg shadow-md font-semibold"
-              >
-                Change Password
-              </button>
-              <button
-                onClick={signOutUser}
-                className="px-4 py-2 bg-gradient-to-r from-gray-700 to-gray-900 hover:from-gray-600 hover:to-gray-800 text-white rounded-lg shadow-md font-semibold"
-              >
-                Sign Out
-              </button>
-            </div>
-          </>
-        )}
-      </div>
 
-      <div id="recaptcha-container"></div>
-    </div>
+              <div className="mb-6 space-y-4">
+                <input
+                  type="email"
+                  placeholder="Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full bg-gray-800 text-white placeholder-gray-400 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                />
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="w-full bg-gray-800 text-white placeholder-gray-400 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 transition"
+                />
+                <button
+                  onClick={handleEmailSignIn}
+                  className="w-full bg-gradient-to-r from-green-600 to-green-800 hover:from-green-500 hover:to-green-700 transition-all duration-300 text-white py-3 rounded-lg shadow-md font-semibold"
+                >
+                  {isNewUser ? 'Register' : 'Sign In'}
+                </button>
+              </div>
+
+              <div className="mb-6 space-y-4">
+                <input
+                  type="tel"
+                  placeholder="Phone number (+1234567890)"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full bg-gray-800 text-white placeholder-gray-400 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-yellow-500 transition"
+                />
+                <button
+                  onClick={sendOtp}
+                  className="w-full bg-gradient-to-r from-yellow-600 to-yellow-800 hover:from-yellow-500 hover:to-yellow-700 transition-all duration-300 text-white py-3 rounded-lg shadow-md font-semibold"
+                >
+                  Send OTP
+                </button>
+              </div>
+
+              {confirmationResult && (
+                <div className="mb-6 space-y-4">
+                  <input
+                    type="text"
+                    placeholder="Enter OTP"
+                    value={otp}
+                    onChange={(e) => setOtp(e.target.value)}
+                    className="w-full bg-gray-800 text-white placeholder-gray-400 border border-gray-600 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-purple-500 transition"
+                  />
+                  <button
+                    onClick={verifyOtp}
+                    className="w-full bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-500 hover:to-purple-700 transition-all duration-300 text-white py-3 rounded-lg shadow-md font-semibold"
+                  >
+                    Verify OTP
+                  </button>
+                </div>
+              )}
+            </>
+          ) : (
+            <>
+              <p className="mb-6 text-center text-gray-300 text-lg">
+                Signed in as <span className="text-blue-400">{user.email || user.phoneNumber}</span>
+              </p>
+              <div className="flex flex-col gap-4">
+                <button
+                  onClick={() => router.push('/coding')}
+                  className="px-4 py-2 bg-gradient-to-r from-green-600 to-green-800 hover:from-green-500 hover:to-green-700 text-white rounded-lg shadow-md font-semibold"
+                >
+                  Go to Coding Page
+                </button>
+                <button
+                  onClick={changePassword}
+                  className="px-4 py-2 bg-gradient-to-r from-orange-600 to-orange-800 hover:from-orange-500 hover:to-orange-700 text-white rounded-lg shadow-md font-semibold"
+                >
+                  Change Password
+                </button>
+                <button
+                  onClick={signOutUser}
+                  className="px-4 py-2 bg-gradient-to-r from-gray-700 to-gray-900 hover:from-gray-600 hover:to-gray-800 text-white rounded-lg shadow-md font-semibold"
+                >
+                  Sign Out
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+
+        <div id="recaptcha-container"></div>
+      </div>
+    </>
   )
 }
