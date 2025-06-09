@@ -535,6 +535,9 @@ video {
 .contents {
   display: contents;
 }
+.h-24 {
+  height: 6rem;
+}
 .max-h-40 {
   max-height: 10rem;
 }
@@ -555,6 +558,9 @@ video {
 }
 .cursor-pointer {
   cursor: pointer;
+}
+.resize-none {
+  resize: none;
 }
 .list-inside {
   list-style-position: inside;
