@@ -33,6 +33,7 @@ export default function CodingPage() {
   const [aiError, setAiError] = useState(null)
   const [output, setOutput] = useState('')
   const [running, setRunning] = useState(false)
+  const [input, setInput] = useState('')  // Added state for stdin input
   const [isLocalChange, setIsLocalChange] = useState(false)
   const [lastLocalChangeTime, setLastLocalChangeTime] = useState(0)
   const router = useRouter()
@@ -155,7 +156,7 @@ export default function CodingPage() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ code, language }),
+        body: JSON.stringify({ code, language, stdin: input }),  // Send input as stdin
       })
       const data = await response.json()
       setOutput(data.output || 'No output')
@@ -196,93 +197,101 @@ export default function CodingPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 text-white p-6 flex flex-col items-center font-sans">
-      <div className="w-full max-w-6xl rounded-xl overflow-hidden shadow-2xl">
-        <select
-          value={language}
-          onChange={(e) => setLanguage(e.target.value)}
-          className="mb-4 p-2 rounded bg-gray-700 text-white"
-        >
-          {supportedLanguages.map((lang) => (
-            <option key={lang.value} value={lang.value}>
-              {lang.label}
-            </option>
-          ))}
-        </select>
-        <MonacoEditor
-          height="60vh"
-          language={language}
-          value={code}
-          onChange={handleCodeChange}
-          theme="vs-dark"
-          options={{
-            fontSize: 16,
-            folding: true,
-            minimap: { enabled: false },
-            lineNumbers: 'on',
-            wordWrap: 'on',
-            automaticLayout: true,
-          }}
-          className="rounded-lg"
+    <>
+      <div className="min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 text-white p-6 flex flex-col items-center font-sans">
+        <div className="w-full max-w-6xl rounded-xl overflow-hidden shadow-2xl">
+          <select
+            value={language}
+            onChange={(e) => setLanguage(e.target.value)}
+            className="mb-4 p-2 rounded bg-gray-700 text-white"
+          >
+            {supportedLanguages.map((lang) => (
+              <option key={lang.value} value={lang.value}>
+                {lang.label}
+              </option>
+            ))}
+          </select>
+          <MonacoEditor
+            height="60vh"
+            language={language}
+            value={code}
+            onChange={handleCodeChange}
+            theme="vs-dark"
+            options={{
+              fontSize: 16,
+              folding: true,
+              minimap: { enabled: false },
+              lineNumbers: 'on',
+              wordWrap: 'on',
+              automaticLayout: true,
+            }}
+            className="rounded-lg"
+          />
+        </div>
+        <textarea
+          placeholder="Enter input for your code here"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          className="mt-4 w-full max-w-6xl p-4 bg-gray-900 rounded text-sm text-white resize-none h-24"
         />
+        <div className="mt-4 flex space-x-4">
+          <button
+            onClick={() => handleAiRequest('suggestions')}
+            disabled={aiLoading}
+            className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600"
+          >
+            AI Suggestions
+          </button>
+          <button
+            onClick={() => handleAiRequest('documentation')}
+            disabled={aiLoading}
+            className="px-4 py-2 rounded bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600"
+          >
+            Auto-Documentation
+          </button>
+          <button
+            onClick={() => handleAiRequest('syntaxFix')}
+            disabled={aiLoading}
+            className="px-4 py-2 rounded bg-green-600 hover:bg-green-700 disabled:bg-gray-600"
+          >
+            Syntax Fix
+          </button>
+          <button
+            onClick={runCode}
+            disabled={running}
+            className="px-4 py-2 rounded bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-600"
+          >
+            {running ? 'Running...' : 'Run Code'}
+          </button>
+        </div>
+        {aiLoading && <p className="mt-4 text-center text-sm text-yellow-300">Loading AI response...</p>}
+        {aiError && <p className="mt-4 text-center text-sm text-red-500">Error: {aiError}</p>}
+        {aiResponse && (
+          <pre className="mt-4 w-full max-w-6xl p-4 bg-gray-900 rounded text-sm overflow-x-auto whitespace-pre-wrap">
+            {aiResponse}
+          </pre>
+        )}
+        {output && (
+          <pre className="mt-4 w-full max-w-6xl p-4 bg-gray-900 rounded text-sm overflow-x-auto whitespace-pre-wrap text-green-400">
+            {output}
+          </pre>
+        )}
+        <button
+          onClick={saveCode}
+          disabled={loading}
+          className={`mt-6 px-6 py-3 rounded-lg shadow-md font-semibold text-white ${
+            loading
+              ? 'bg-gray-500 cursor-not-allowed'
+              : 'bg-gradient-to-r from-green-600 to-green-800 hover:from-green-500 hover:to-green-700'
+          }`}
+        >
+          {loading ? 'Saving...' : 'Save Code'}
+        </button>
+        {message && (
+          <p className="mt-4 text-center text-sm text-yellow-300">{message}</p>
+        )}
+        <Collaboration userId={user.uid} />
       </div>
-      <div className="mt-4 flex space-x-4">
-        <button
-          onClick={() => handleAiRequest('suggestions')}
-          disabled={aiLoading}
-          className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600"
-        >
-          AI Suggestions
-        </button>
-        <button
-          onClick={() => handleAiRequest('documentation')}
-          disabled={aiLoading}
-          className="px-4 py-2 rounded bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600"
-        >
-          Auto-Documentation
-        </button>
-        <button
-          onClick={() => handleAiRequest('syntaxFix')}
-          disabled={aiLoading}
-          className="px-4 py-2 rounded bg-green-600 hover:bg-green-700 disabled:bg-gray-600"
-        >
-          Syntax Fix
-        </button>
-        <button
-          onClick={runCode}
-          disabled={running}
-          className="px-4 py-2 rounded bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-600"
-        >
-          {running ? 'Running...' : 'Run Code'}
-        </button>
-      </div>
-      {aiLoading && <p className="mt-4 text-center text-sm text-yellow-300">Loading AI response...</p>}
-      {aiError && <p className="mt-4 text-center text-sm text-red-500">Error: {aiError}</p>}
-      {aiResponse && (
-        <pre className="mt-4 w-full max-w-6xl p-4 bg-gray-900 rounded text-sm overflow-x-auto whitespace-pre-wrap">
-          {aiResponse}
-        </pre>
-      )}
-      {output && (
-        <pre className="mt-4 w-full max-w-6xl p-4 bg-gray-900 rounded text-sm overflow-x-auto whitespace-pre-wrap text-green-400">
-          {output}
-        </pre>
-      )}
-      <button
-        onClick={saveCode}
-        disabled={loading}
-        className={`mt-6 px-6 py-3 rounded-lg shadow-md font-semibold text-white ${
-          loading
-            ? 'bg-gray-500 cursor-not-allowed'
-            : 'bg-gradient-to-r from-green-600 to-green-800 hover:from-green-500 hover:to-green-700'
-        }`}
-      >
-        {loading ? 'Saving...' : 'Save Code'}
-      </button>
-      {message && (
-        <p className="mt-4 text-center text-sm text-yellow-300">{message}</p>
-      )}
-      <Collaboration userId={user.uid} />
-    </div>
+    </>
   )
 }

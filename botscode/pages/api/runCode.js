@@ -56,7 +56,7 @@ export default async function handler(req, res) {
     return;
   }
 
-  const { code, language } = req.body;
+  const { code, language, stdin } = req.body;
 
   if (!code || !language) {
     res.status(400).json({ error: 'Code and language are required' });
@@ -70,7 +70,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    console.log('Submitting code to Judge0 API:', { code, languageId });
+    console.log('Submitting code to Judge0 API:', { code, languageId, stdin });
     // Submit code with wait=true for synchronous execution
     const submitResponse = await fetch(`${JUDGE0_API_BASE_URL}/submissions?base64_encoded=false&wait=true`, {
       method: 'POST',
@@ -82,7 +82,7 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         source_code: code,
         language_id: languageId,
-        stdin: '',
+        stdin: stdin || '',
       }),
     });
 
